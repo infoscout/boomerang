@@ -13,6 +13,10 @@ class Job(models.Model):
     progress = models.PositiveIntegerField(default=0)
     goal = models.PositiveIntegerField(null=True, blank=True)
 
+    def set_name(self, name):
+        self.name = name
+        self.save()
+
     def increment_progress(self, increment):
         self.progress += increment
         self.save()

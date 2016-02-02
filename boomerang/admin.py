@@ -1,11 +1,13 @@
 from django.conf.urls.defaults import patterns, url
 from isc_admin import AdminApp
-from views import abc
+from models import Job
+from model_admins import JobAdmin
 
 
 class BoomerangAdminApp(AdminApp):
     def get_urls(self):
         urls = patterns('',
-             url(r'^abc/?$', abc, name='abc'),
         )
         return urls
+
+BoomerangAdminApp.register(Job, JobAdmin)
