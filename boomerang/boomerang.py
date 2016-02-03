@@ -11,7 +11,7 @@ def boomerang(function):
         job.save()
         return result
 
-    job = Job(name="A test", status="RUNNING")
+    job = Job(name="Unnamed job", status="RUNNING")
     job.save()
     inner._boomerang_job = job
     return inner

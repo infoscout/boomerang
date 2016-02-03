@@ -8,7 +8,7 @@ class Job(models.Model):
         ("FAILED", "Failed"),
     )
 
-    name = models.CharField(max_length=64, help_text="A simple description, e.g. 'Issuing survey push notifications'")
+    name = models.CharField(max_length=64)
     status = models.CharField(max_length=32, choices=STATUS_CHOICES)
     progress = models.PositiveIntegerField(default=0)
     goal = models.PositiveIntegerField(null=True, blank=True)
