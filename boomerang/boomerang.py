@@ -1,17 +1,16 @@
 from models import Job
+from celery.task import task
 
-def boomerang(function):
-    def inner(*args, **kwargs):
-        try:
-            result = function(*args, **kwargs)
-            job.status = "DONE"
-        except:
-            result = None
-            job.status = "FAILED"
-        job.save()
-        return result
+def boomerang(function, *args, **kwargs):
+    name = function.__name__.replace("_", " ").capitalize()[:64]
+    job = Job.objects.create(name=name)
+    boomerang_task.delay(function, job, *args, **kwargs)
 
-    job = Job(name="Unnamed job", status="RUNNING")
-    job.save()
-    inner._boomerang_job = job
-    return inner
+@task
+def boomerang_task(function, job, *args, **kwargs):
+    try:
+        function(job, *args, **kwargs)
+        job.set_status("DONE")
+    except:
+        job.set_status("FAILED")
+        raise

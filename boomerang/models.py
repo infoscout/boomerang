@@ -8,13 +8,18 @@ class Job(models.Model):
         ("FAILED", "Failed"),
     )
 
-    name = models.CharField(max_length=64)
-    status = models.CharField(max_length=32, choices=STATUS_CHOICES)
-    progress = models.PositiveIntegerField(default=0)
+    name = models.CharField(max_length=64, default="Unnamed job")
+    start_time = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=32, choices=STATUS_CHOICES, default="RUNNING")
+    progress = models.PositiveIntegerField(default=0, verbose_name="Progress (Approximate)")
     goal = models.PositiveIntegerField(null=True, blank=True)
 
     def set_name(self, name):
         self.name = name
+        self.save()
+
+    def set_status(self, status):
+        self.status = status
         self.save()
 
     def increment_progress(self, increment):
