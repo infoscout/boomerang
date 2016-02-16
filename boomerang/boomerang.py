@@ -1,12 +1,16 @@
-import importlib
 from models import Job
+from exceptions import BoomerangFailedTask
 from celery.task import task
 from django.db import transaction
+import importlib
+
+# See README.md
 
 def boomerang(function):
     """
-    @param function: Function to be called in a celery task
-    @return: Boomerang: Instance whose methods (__call__, delay, apply_async) are called in code
+    @param function: The original function to be run in the background
+    @return: Boomerang: Instance whose methods (__call__, delay, apply_async)
+                        are called in code on the original function
     """
 
     class Boomerang:
@@ -16,15 +20,16 @@ def boomerang(function):
 
         def __call__(self, *args, **kwargs):
             """
-            As long as the function doesn't interact with its Job, it can be called
-            as a normal function.
+            As long as the function doesn't interact with its Job, it can also
+            be called as a normal function.
             """
-            return function(*args, **kwargs)
+            return function(None, *args, **kwargs)
 
         def delay(self, *args, **kwargs):
             """
             delay() is the celery shortcut for passing args/kwargs to apply_async,
             so this is the same shortcut.
+            @return: Job
             """
             return self.apply_async(args=args, kwargs=kwargs)
 
@@ -48,10 +53,11 @@ def boomerang(function):
                 args = extra_info + (args or ())
                 kwargs = kwargs or {}
                 c_kwargs = c_kwargs or {}
-                
+
             boomerang_task.apply_async(args=args, kwargs=kwargs, **c_kwargs)
             return job
 
+    # Replace the function with an instance of this class
     return Boomerang()
 
 
@@ -65,7 +71,7 @@ def boomerang_task(module, name, job_id, *args, **kwargs):
     """
 
     try:
-        # Reimport the function
+        # Reimport the function, which has been decorated into a Boomerang instance
         module = importlib.import_module(module)
         boomerang_instance = getattr(module, name)
 
@@ -75,6 +81,8 @@ def boomerang_task(module, name, job_id, *args, **kwargs):
         job.set_status("RUNNING")
         boomerang_instance.original_function(job, *args, **kwargs)
         job.set_status("DONE")
+    except BoomerangFailedTask:
+        job.set_status("FAILED")
     except:
         job.set_status("FAILED")
         raise
