@@ -20,6 +20,7 @@ class Job(models.Model):
     status = models.CharField(max_length=32, choices=STATUS_CHOICES, default="NOTRUNNING")
     progress = models.PositiveIntegerField(default=0)
     goal = models.PositiveIntegerField(null=True, blank=True)
+    celery_task_id = models.CharField(max_length=64, null=True, blank=True)
 
     last_saved = None
 
@@ -70,6 +71,10 @@ class Job(models.Model):
         @param goal: Int
         """
         self.goal = goal
+        self.save()
+
+    def set_celery_task_id(self, celery_task_id):
+        self.celery_task_id = celery_task_id
         self.save()
 
     def elapsed_time(self):

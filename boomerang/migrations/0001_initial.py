@@ -17,6 +17,7 @@ class Migration(SchemaMigration):
             ('status', self.gf('django.db.models.fields.CharField')(default='NOTRUNNING', max_length=32)),
             ('progress', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
             ('goal', self.gf('django.db.models.fields.PositiveIntegerField')(null=True, blank=True)),
+            ('celery_task_id', self.gf('django.db.models.fields.CharField')(max_length=64, null=True, blank=True)),
         ))
         db.send_create_signal('boomerang', ['Job'])
 
@@ -29,6 +30,7 @@ class Migration(SchemaMigration):
     models = {
         'boomerang.job': {
             'Meta': {'object_name': 'Job'},
+            'celery_task_id': ('django.db.models.fields.CharField', [], {'max_length': '64', 'null': 'True', 'blank': 'True'}),
             'end_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'goal': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
