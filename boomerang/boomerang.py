@@ -78,11 +78,11 @@ def boomerang_task(module, name, job_id, *args, **kwargs):
         job = Job.objects.get(id=job_id)
         boomerang_instance.job = job
 
-        job.set_status("RUNNING")
+        job.set_status(Job.RUNNING)
         boomerang_instance.original_function(job, *args, **kwargs)
-        job.set_status("DONE")
+        job.set_status(Job.DONE)
     except BoomerangFailedTask:
-        job.set_status("FAILED")
+        job.set_status(Job.FAILED)
     except:
-        job.set_status("FAILED")
+        job.set_status(Job.FAILED)
         raise

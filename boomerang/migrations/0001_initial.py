@@ -13,7 +13,8 @@ class Migration(SchemaMigration):
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(default='Unnamed job', max_length=64)),
             ('start_time', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('status', self.gf('django.db.models.fields.CharField')(default='RUNNING', max_length=32)),
+            ('end_time', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
+            ('status', self.gf('django.db.models.fields.CharField')(default='NOTRUNNING', max_length=32)),
             ('progress', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
             ('goal', self.gf('django.db.models.fields.PositiveIntegerField')(null=True, blank=True)),
         ))
@@ -28,12 +29,13 @@ class Migration(SchemaMigration):
     models = {
         'boomerang.job': {
             'Meta': {'object_name': 'Job'},
+            'end_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'goal': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'default': "'Unnamed job'", 'max_length': '64'}),
             'progress': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
             'start_time': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'status': ('django.db.models.fields.CharField', [], {'default': "'RUNNING'", 'max_length': '32'})
+            'status': ('django.db.models.fields.CharField', [], {'default': "'NOTRUNNING'", 'max_length': '32'})
         }
     }
 
