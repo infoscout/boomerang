@@ -11,7 +11,7 @@ Each Boomerang task has an associated Job object. It's the first and only requir
 
 * *job.set_name(string)* By default, the name of the job is the (prettified) name of the wrapped function.
 * *job.set_goal(int)* Some optional integer target to be displayed in the admin panel; for example, the number of push notifications to be sent.
-* *job.increment_progress(int)* Increment an integer (default is 1) marking progress toward the goal. This calls save at most once per second.
+* *job.increment_progress(int)* Increment by an integer (default is 1) marking progress toward the goal. This calls save at most once per second.
 
 These are optional. The Job will still display its states regardless of progress updates.
 
