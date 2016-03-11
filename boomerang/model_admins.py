@@ -1,6 +1,6 @@
-from isc_admin import ModelAdmin
+from django.contrib import admin
 
-class JobAdmin(ModelAdmin):
+class JobAdmin(admin.ModelAdmin):
     list_display = (
         'id', 'name', 'start_time', 'elapsed_time', 'status', 'progress', 'goal',
     )
