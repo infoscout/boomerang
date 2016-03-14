@@ -82,8 +82,8 @@ def boomerang_task(module, name, job_id, *args, **kwargs):
         job.set_status(Job.RUNNING)
         boomerang_instance.original_function(job, *args, **kwargs)
         job.set_status(Job.DONE)
-    except BoomerangFailedTask:
+
+    except Exception as e:
         job.set_status(Job.FAILED)
-    except:
-        job.set_status(Job.FAILED)
-        raise
+        if not isinstance(e, BoomerangFailedTask):
+            raise

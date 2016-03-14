@@ -17,7 +17,7 @@ class Job(models.Model):
     name = models.CharField(max_length=64, default="Unnamed job")
     start_time = models.DateTimeField(auto_now_add=True)
     end_time = models.DateTimeField(null=True, blank=True)
-    status = models.CharField(max_length=32, choices=STATUS_CHOICES, default="NOTRUNNING")
+    status = models.CharField(max_length=32, choices=STATUS_CHOICES, default=NOTRUNNING)
     progress = models.PositiveIntegerField(default=0)
     goal = models.PositiveIntegerField(null=True, blank=True)
     celery_task_id = models.CharField(max_length=64, null=True, blank=True)
