@@ -1,10 +1,14 @@
-from models import Job
-from exceptions import BoomerangFailedTask
-from celery.task import task
-from django.db import transaction
 import importlib
 
+from django.db import transaction
+
+from celery.task import task
+
+from models import Job
+from exceptions import BoomerangFailedTask
+
 # See README.md
+
 
 def boomerang(function):
     """
@@ -14,6 +18,7 @@ def boomerang(function):
     """
 
     class Boomerang:
+
         def __init__(self):
             # Store the original function so boomerang_task can call it
             self.original_function = function
@@ -40,7 +45,6 @@ def boomerang(function):
             @param **c_kwargs: Dict of arguments to be passed to celery (e.g. countdown)
             @return: Job
             """
-
             with transaction.commit_on_success():
                 # Create the Job synchronously so it immediately appears in the admin site.
                 # Do this in a transaction to guarantee that it's committed in the db
@@ -70,7 +74,6 @@ def boomerang_task(module, name, job_id, *args, **kwargs):
     @param job_id: Job id
     @param args, kwargs: Passed to the function
     """
-
     try:
         # Reimport the function, which has been decorated into a Boomerang instance
         module = importlib.import_module(module)
