@@ -47,7 +47,7 @@ def boomerang(function):
             """
             from models import Job
 
-            with transaction.commit_on_success():
+            with transaction.atomic():
                 # Create the Job synchronously so it immediately appears in the admin site.
                 # Do this in a transaction to guarantee that it's committed in the db
                 # before it's used in a celery thread.
