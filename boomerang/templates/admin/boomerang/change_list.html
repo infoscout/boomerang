@@ -1,0 +1,52 @@
+{% extends "admin/change_list.html" %}
+
+{% block extrahead %}
+  {{ block.super }}
+
+  <style>
+    #glass {
+      width: 100%;
+      height: 20px;
+      background: #c7c7c7;
+      border-radius: 10px;
+      float: left;
+      overflow: hidden;
+    }
+
+    #progress {
+      float: left;
+      height: 20px;
+      background: #FF5D50;
+      z-index: 333;
+    }
+  </style>
+
+  <script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function() {
+      'use strict'
+
+      function get_value_from_td(row, selector) {
+        return parseInt(row.find(selector).text());
+      }
+
+      // Insert a row between each result in the table to display status
+      $('table#result_list').find('.row1, .row2').each(function() {
+        var progress = get_value_from_td($(this), '.field-progress');
+        var goal = get_value_from_td($(this), '.field-goal');
+        var row_class = $(this).attr('class');
+        var num_cols = $(this).children().length;
+
+        // Determine progress percentage (and colour)
+        var progress_color = "ff5d50";
+        var progress_perc = progress / goal * 100;
+        if (progress_perc === 100) {
+          progress_color = "00cc66";
+        }
+
+        // Insert a row to include the thermometer
+        $('<tr class="' + row_class + '"><td colspan="' + num_cols + '"><div id="glass"><div id="progress" style="width: ' + progress_perc + '%; background: #' + progress_color + ';"></div></div></td></tr>').insertAfter($(this));
+      });
+    });
+  </script>
+{% endblock %}

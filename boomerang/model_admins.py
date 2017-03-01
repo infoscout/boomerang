@@ -3,6 +3,7 @@ from django.contrib import admin
 
 class JobAdmin(admin.ModelAdmin):
 
+    change_list_template = 'admin/boomerang/change_list.html'
     list_display = ('id', 'name', 'start_time', 'elapsed_time', 'status', 'progress', 'goal',)
     list_display_links = None
     actions = None
