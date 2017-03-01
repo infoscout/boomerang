@@ -6,6 +6,7 @@ from celery.task import task
 
 from exceptions import BoomerangFailedTask
 
+
 # See README.md
 
 
