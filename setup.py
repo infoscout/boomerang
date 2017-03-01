@@ -10,4 +10,8 @@ setup(
     description='Django app to asynchronously process tasks',
     url='http://github.com/infoscout/boomerang',
     version=current_version(),
+    install_requires=[
+        'Django>=1.8',
+        'celery>=3.0',
+    ]
 )
