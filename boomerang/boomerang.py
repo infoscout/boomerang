@@ -2,7 +2,7 @@ import importlib
 
 from django.db import transaction
 
-from celery.task import task
+from celery.task import shared_task
 
 from exceptions import BoomerangFailedTask
 
@@ -68,7 +68,7 @@ def boomerang(function):
     return Boomerang()
 
 
-@task
+@shared_task
 def boomerang_task(module, name, job_id, *args, **kwargs):
     """
     @param module: String module path where the function is
