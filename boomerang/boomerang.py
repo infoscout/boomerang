@@ -2,7 +2,7 @@ import importlib
 
 from django.db import transaction
 
-from celery.task import shared_task
+from celery import shared_task
 
 from exceptions import BoomerangFailedTask
 
