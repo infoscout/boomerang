@@ -17,7 +17,6 @@
     #progress {
       float: left;
       height: 10px;
-      background: #FF5D50;
       z-index: 333;
     }
   </style>
@@ -35,18 +34,13 @@
       $('table#result_list').find('.row1, .row2').each(function() {
         var progress = get_value_from_td($(this), '.field-progress');
         var goal = get_value_from_td($(this), '.field-goal');
+        var progress_perc = progress / goal * 100;
+        var progress_color = $(this).find('.field-_status > span').attr('status-color');
         var row_class = $(this).attr('class');
         var num_cols = $(this).children().length;
 
-        // Determine progress percentage (and colour)
-        var progress_color = "ff5d50";
-        var progress_perc = progress / goal * 100;
-        if (progress_perc === 100) {
-          progress_color = "00cc66";
-        }
-
         // Insert a row to include the thermometer
-        $('<tr class="' + row_class + '"><td colspan="' + num_cols + '"><div id="glass"><div id="progress" style="width: ' + progress_perc + '%; background: #' + progress_color + ';"></div></div></td></tr>').insertAfter($(this));
+        $('<tr class="' + row_class + '"><td colspan="' + num_cols + '"><div id="glass"><div id="progress" style="width: ' + progress_perc + '%; background: ' + progress_color + ';"></div></div></td></tr>').insertAfter($(this));
       });
     });
   </script>

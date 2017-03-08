@@ -16,6 +16,14 @@ class Job(models.Model):
         (FAILED, "Failed"),
     )
 
+    STATUS_COLOR_RED = '#ff5d50'
+    STATUS_COLOR_YELLOW = '#dddd44'
+    STATUS_COLOR_GREEN = '#00cc66'
+    STATUS_COLORS = {
+        FAILED: STATUS_COLOR_RED,
+        DONE: STATUS_COLOR_GREEN,
+    }
+
     name = models.CharField(max_length=64, default="Unnamed job")
     start_time = models.DateTimeField(auto_now_add=True)
     end_time = models.DateTimeField(null=True, blank=True)
@@ -25,6 +33,10 @@ class Job(models.Model):
     celery_task_id = models.CharField(max_length=64, null=True, blank=True)
 
     last_saved = None
+
+    @property
+    def status_color(self):
+        return self.STATUS_COLORS.get(self.status, self.STATUS_COLOR_YELLOW)
 
     @classmethod
     def create_with_fn_name(cls, function):
