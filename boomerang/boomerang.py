@@ -61,7 +61,8 @@ def boomerang(function):
                 c_kwargs = c_kwargs or {}
 
             async_result = boomerang_task.apply_async(args=args, kwargs=kwargs, **c_kwargs)
-            # job.set_celery_task_id(async_result.id)
+            if async_result:
+                job.set_celery_task_id(async_result.id)
             return job
 
     # Replace the function with an instance of this class
