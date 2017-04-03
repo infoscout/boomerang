@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.safestring import mark_safe
 
 
 class JobAdmin(admin.ModelAdmin):
@@ -21,9 +22,10 @@ class JobAdmin(admin.ModelAdmin):
         pass
 
     def _status(self, obj):
-        return '<span status-color="{status_color}">{status}</span>'.format(
-            status_color=obj.status_color,
-            status=obj.get_status_display()
+        return mark_safe(
+            '<span status-color="{status_color}">{status}</span>'.format(
+                status_color=obj.status_color,
+                status=obj.get_status_display()
+            )
         )
     _status.short_description = 'Status'
-    _status.allow_tags = True
