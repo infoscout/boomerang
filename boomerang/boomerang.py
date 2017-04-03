@@ -79,19 +79,19 @@ def boomerang_task(module, name, job_id, *args, **kwargs):
     """
     from models import Job
 
+    # Reimport the function, which has been decorated into a Boomerang instance
+    module = importlib.import_module(module)
+    boomerang_instance = getattr(module, name)
+
+    job = Job.objects.get(id=job_id)
+    boomerang_instance.job = job
+    job.set_status(Job.RUNNING)
+
     try:
-        # Reimport the function, which has been decorated into a Boomerang instance
-        module = importlib.import_module(module)
-        boomerang_instance = getattr(module, name)
-
-        job = Job.objects.get(id=job_id)
-        boomerang_instance.job = job
-
-        job.set_status(Job.RUNNING)
         boomerang_instance.original_function(job, *args, **kwargs)
-        job.set_status(Job.DONE)
-
     except Exception as e:
         job.set_status(Job.FAILED)
         if not isinstance(e, BoomerangFailedTask):
             raise
+    else:
+        job.set_status(Job.DONE)
