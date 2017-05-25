@@ -1,6 +1,8 @@
-from setuptools import find_packages
+from setuptools import find_packages, setup
 
-from isc_ops.setup_tools import setup, current_version
+
+with open('VERSION', 'r') as f:
+    version = f.read().strip()
 
 
 setup(
@@ -9,7 +11,7 @@ setup(
     include_package_data=True,
     description='Django app to asynchronously process tasks',
     url='http://github.com/infoscout/boomerang',
-    version=current_version(),
+    version=version,
     install_requires=[
         'Django>=1.8',
         'celery>=3.0',
