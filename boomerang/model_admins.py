@@ -28,4 +28,4 @@ class JobAdmin(admin.ModelAdmin):
                 status=obj.get_status_display()
             )
         )
-    _status.short_description = 'Status'
+    _status.admin_order_field = 'status'
