@@ -5,9 +5,7 @@ Django app to provide visibility into Celery tasks.
 ## Usage
 
 ### Defining the task
-Although eventually executed within a Celery task, the function you write should be wrapped in @boomerang, ***not*** @task.
-
-Each Boomerang task has an associated Job object. It's the first and only required argument passed to any function you write. Jobs have states "Not yet running", "Running", "Done", and "Failed". They have three public mutator methods, each of which calls the Job's save method:
+Each Boomerang task has an associated Job object. Jobs have states "Not yet running", "Running", "Done", and "Failed". They have three public mutator methods, each of which calls the Job's save method:
 
 * *job.set_name(string)* By default, the name of the job is the (prettified) name of the wrapped function.
 * *job.set_goal(int)* Some optional integer target to be displayed in the admin panel; for example, the number of push notifications to be sent.
@@ -15,25 +13,29 @@ Each Boomerang task has an associated Job object. It's the first and only requir
 
 These are optional. The Job will still display its states regardless of progress updates.
 
-A Job's state is Failed if an exception is caught. To signal an intentional failure, import and raise BoomerangFailedTask; otherwise, the exception will be re-raised after updating the Job's state.
+A Job instance is passed to a Boomerang Task's `perform_async()` static method, which can be used to update the state of a job. By default, the goal is set synchronously by checking the size of any lists or dicts passed in as arguments although this behaviour can be overridden by defining the `get_goal_size()` method.
 
-    from boomerang import boomerang, BoomerangFailedTask
+A Job's state is Failed if an exception is caught. To signal an intentional failure, import and raise `BoomerangFailedTask`; otherwise, the exception will be re-raised after updating the Job's state.
 
-    @boomerang
-    def send_push_notifications(job, user_ids):
-        job.set_goal(len(user_ids))
-        for user_id in user_ids:
-            # ...push notification logic...
-            if something_went_wrong:
-                raise BoomerangFailedTask
-            job.increment_progress()
+    from boomerang import BoomerangTask, BoomerangFailedTask
+
+    class SendPushNotificationsBoomerangTask(BoomerangTask):
+
+        @staticmethod
+        def perform_async(job, user_ids):
+            for user_id in user_ids:
+                # ...push notification logic...
+                if something_went_wrong:
+                    raise BoomerangFailedTask
+                job.increment_progress()
+
+The method `get_name()` can also be overridden to change the name of the Boomerang Task shown in admin.
 
 ### Calling the task
-The same .delay() or .apply_async() methods for Celery tasks are available.
+To call the task, simply initialize the Boomerang Task class with the values you would like passed in to `perform_async()`:
 
-    send_push_notifications.delay(user_ids)
-    send_push_notifications.apply_async(args=(user_ids,), countdown=60)
+    SendPushNotificationsBoomerangTask(user_ids)
 
-As with Celery, the function can be called normally and won't run in a Celery task or create a Job. This is only possible if the function doesn't interact with the job argument.
+By default, a Boomerang Task with a goal of 1 will execute the `perform_async()` step synchronously. This can be disabled by setting `perform_sync_with_single` to `False`.
 
-    send_push_notifications(user_ids)
+Overriding the `perform_sync()` method allows you to run steps synchronously for every job (regardless of the goal size), although variables in the scope of this function are not accessible in the `perform_async()` method, so any work done here that should be accessible during `perform_async()` must be saved to the database.

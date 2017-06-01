@@ -1,6 +1,5 @@
 import importlib
-
-from django.db import transaction
+import itertools
 
 from celery import shared_task
 
@@ -10,88 +9,89 @@ from exceptions import BoomerangFailedTask
 # See README.md
 
 
-def boomerang(function):
-    """
-    @param function: The original function to be run in the background
-    @return: Boomerang: Instance whose methods (__call__, delay, apply_async)
-                        are called in code on the original function
-    """
+class BoomerangTask(object):
 
-    class Boomerang:
+    perform_sync_with_single = True
 
-        def __init__(self):
-            # Store the original function so boomerang_task can call it
-            self.original_function = function
+    @staticmethod
+    def camel_case_to_name(name):
+        words = []
+        startpos = 0
 
-        def __call__(self, *args, **kwargs):
-            """
-            As long as the function doesn't interact with its Job, it can also
-            be called as a normal function.
-            """
-            return function(None, *args, **kwargs)
+        # Iterate through characters in the name, adding individual words
+        for currentpos, char in enumerate(name):
+            if char.isupper() and startpos < currentpos:
+                words.append(name[startpos:currentpos])
+                startpos = currentpos
+        words.append(name[startpos:])
 
-        def delay(self, *args, **kwargs):
-            """
-            delay() is the celery shortcut for passing args/kwargs to apply_async,
-            so this is the same shortcut.
-            @return: Job
-            """
-            return self.apply_async(args=args, kwargs=kwargs)
+        return ' '.join(words).title()
 
-        def apply_async(self, args=None, kwargs=None, **c_kwargs):
-            """
-            @param args: Tuple of arguments to be passed to function
-            @param kwargs: Dict of arguments to be passed to function
-            @param **c_kwargs: Dict of arguments to be passed to celery (e.g. countdown)
-            @return: Job
-            """
-            from models import Job
+    def __init__(self, *args, **kwargs):
+        from models import Job
 
-            with transaction.atomic():
-                # Create the Job synchronously so it immediately appears in the admin site.
-                # Do this in a transaction to guarantee that it's committed in the db
-                # before it's used in a celery thread.
-                job = Job.create_with_fn_name(function)
+        # Run synchronous code
+        self.perform_sync(*args, **kwargs)
+        goal = self.get_goal_size(*args, **kwargs)
 
-                # Pass the location and name of the function, so that when the task runs
-                # it imports the latest version of that function's code.
-                extra_info = (function.__module__, function.__name__, job.id)
-                args = extra_info + (args or ())
-                kwargs = kwargs or {}
-                c_kwargs = c_kwargs or {}
-
-            async_result = boomerang_task.apply_async(args=args, kwargs=kwargs, **c_kwargs)
+        if self.perform_sync_with_single and goal == 1:
+            # Perform asynchronous code synchronously if there is only one item
+            self.perform_async(None, *args, **kwargs)
+        else:
+            # Otherwise, create a Boomerang Job and run code asynchronously
+            job = Job()
+            job.set_name(self.get_name(*args, **kwargs))
+            job.set_goal(goal)
+            async_result = boomerang_task.delay(self.__module__, self.__class__.__name__, job.id, *args, **kwargs)
             if async_result:
                 job.set_celery_task_id(async_result.id)
-            return job
 
-    # Replace the function with an instance of this class
-    return Boomerang()
+    def get_goal_size(self, *args, **kwargs):
+        # Estimate the goal size by checking the length of lists and dicts provided as arguments
+        goal = 0
+        all_arguments = itertools.chain(args, kwargs.itervalues())
+        for argument in all_arguments:
+            if isinstance(argument, list) or isinstance(argument, dict):
+                goal += len(argument)
+        return goal or 1  # Every goal should have a size of at least 1
+
+    def get_name(self, *args, **kwargs):
+        name_from_class = self.camel_case_to_name(self.__class__.__name__).replace('Boomerang Task', '')
+        return getattr(self, 'name', name_from_class)
+
+    def perform_sync(self, *args, **kwargs):
+        pass
+
+    @staticmethod
+    def perform_async(job, *args, **kwargs):
+        pass
 
 
 @shared_task
 def boomerang_task(module, name, job_id, *args, **kwargs):
     """
-    @param module: String module path where the function is
-    @param name: String name of the function
+    @param module: String module path where the Boomerang Task class is
+    @param name: String name of the Boomerang Task class
     @param job_id: Job id
     @param args, kwargs: Passed to the function
     """
     from models import Job
 
-    # Reimport the function, which has been decorated into a Boomerang instance
+    # Reimport the Boomerang Task
     module = importlib.import_module(module)
-    boomerang_instance = getattr(module, name)
+    boomerang_task = getattr(module, name)
 
+    # Get the Job and mark it as running
     job = Job.objects.get(id=job_id)
-    boomerang_instance.job = job
     job.set_status(Job.RUNNING)
 
+    # Perform the asynchronous code for the Boomerang Task
     try:
-        boomerang_instance.original_function(job, *args, **kwargs)
+        boomerang_task.perform_async(job, *args, **kwargs)
     except Exception as e:
         job.set_status(Job.FAILED)
         if not isinstance(e, BoomerangFailedTask):
             raise
     else:
+        job.progress = job.goal
         job.set_status(Job.DONE)

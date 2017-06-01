@@ -1,5 +1,5 @@
-from boomerang import boomerang
+from boomerang import BoomerangTask
 from exceptions import BoomerangFailedTask
 
 
-__all__ = ['boomerang', 'BoomerangFailedTask']
+__all__ = ['BoomerangTask', 'BoomerangFailedTask']

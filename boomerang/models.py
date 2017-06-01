@@ -38,17 +38,6 @@ class Job(models.Model):
     def status_color(self):
         return self.STATUS_COLORS.get(self.status, self.STATUS_COLOR_YELLOW)
 
-    @classmethod
-    def create_with_fn_name(cls, function):
-        """
-        @param function: Function
-        @return: Job
-        """
-        name = function.__name__.replace("_", " ").capitalize()
-        job = cls()
-        job.set_name(name)
-        return job
-
     def set_name(self, name):
         """
         @param name: String
