@@ -39,9 +39,8 @@ class BoomerangTask(object):
             self.perform_async(None, *args, **kwargs)
         else:
             # Otherwise, create a Boomerang Job and run code asynchronously
-            job = Job()
-            job.set_name(self.get_name(*args, **kwargs))
-            job.set_goal(goal)
+            name = Job.truncate_name(self.get_name(*args, **kwargs))
+            job = Job.objects.create(name=name, goal=goal)
             async_result = boomerang_task.delay(self.__module__, self.__class__.__name__, job.id, *args, **kwargs)
             if async_result:
                 job.set_celery_task_id(async_result.id)

@@ -34,17 +34,17 @@ class Job(models.Model):
 
     last_saved = None
 
-    @property
-    def status_color(self):
-        return self.STATUS_COLORS.get(self.status, self.STATUS_COLOR_YELLOW)
-
-    def set_name(self, name):
+    @classmethod
+    def truncate_name(cls, name):
         """
         @param name: String
         """
-        max_len = self._meta.get_field('name').max_length
-        self.name = name[:max_len]
-        self.save()
+        max_length = cls._meta.get_field('name').max_length
+        return name[:max_length]
+
+    @property
+    def status_color(self):
+        return self.STATUS_COLORS.get(self.status, self.STATUS_COLOR_YELLOW)
 
     def set_status(self, status):
         """
@@ -68,13 +68,6 @@ class Job(models.Model):
         if self.last_saved is None or self.last_saved + timedelta(seconds=1) <= now:
             self.save()
             self.last_saved = now
-
-    def set_goal(self, goal):
-        """
-        @param goal: Int
-        """
-        self.goal = goal
-        self.save()
 
     def set_celery_task_id(self, celery_task_id):
         self.celery_task_id = celery_task_id

@@ -5,13 +5,7 @@ Django app to provide visibility into Celery tasks.
 ## Usage
 
 ### Defining the task
-Each Boomerang task has an associated Job object. Jobs have states "Not yet running", "Running", "Done", and "Failed". They have three public mutator methods, each of which calls the Job's save method:
-
-* *job.set_name(string)* By default, the name of the job is the (prettified) name of the wrapped function.
-* *job.set_goal(int)* Some optional integer target to be displayed in the admin panel; for example, the number of push notifications to be sent.
-* *job.increment_progress(int)* Increment by an integer (default is 1) marking progress toward the goal. This calls save at most once per second.
-
-These are optional. The Job will still display its states regardless of progress updates.
+Each Boomerang task has an associated Job object. Jobs have states "Not yet running", "Running", "Done", and "Failed". They have a public mutator method `increment_progress()`, which increments progress towards the goal, represented by an integer (default is 1). After incrementing progress, this call `save()`s the job, but at most once per second. Calling `increment_progress()` is completely optional. The Job will still display its states regardless of progress updates.
 
 A Job instance is passed to a Boomerang Task's `perform_async()` static method, which can be used to update the state of a job. By default, the goal is set synchronously by checking the size of any lists or dicts passed in as arguments although this behaviour can be overridden by defining the `get_goal_size()` method.
 
