@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+from django.conf import settings
 from django.db import models
 
 
@@ -30,6 +31,7 @@ class Job(models.Model):
     status = models.CharField(max_length=32, choices=STATUS_CHOICES, default=NOTRUNNING)
     progress = models.PositiveIntegerField(default=0)
     goal = models.PositiveIntegerField(null=True, blank=True)
+    executed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     celery_task_id = models.CharField(max_length=64, null=True, blank=True)
 
     last_saved = None

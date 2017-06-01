@@ -16,7 +16,7 @@ A Job's state is Failed if an exception is caught. To signal an intentional fail
     class SendPushNotificationsBoomerangTask(BoomerangTask):
 
         @staticmethod
-        def perform_async(job, user_ids):
+        def perform_async(job, user_ids, *args, **kwargs):
             for user_id in user_ids:
                 # ...push notification logic...
                 if something_went_wrong:
@@ -28,8 +28,10 @@ The method `get_name()` can also be overridden to change the name of the Boomera
 ### Calling the task
 To call the task, simply initialize the Boomerang Task class with the values you would like passed in to `perform_async()`:
 
-    SendPushNotificationsBoomerangTask(user_ids)
+    SendPushNotificationsBoomerangTask(user_ids, request=request)
 
 By default, a Boomerang Task with a goal of 1 will execute the `perform_async()` step synchronously. This can be disabled by setting `perform_sync_with_single` to `False`.
+
+If the request object is provided, Boomerang will record the executor of the job (using the authenticated user in the request). However, the request object will not be included in the `perform_async` method.
 
 Overriding the `perform_sync()` method allows you to run steps synchronously for every job (regardless of the goal size), although variables in the scope of this function are not accessible in the `perform_async()` method, so any work done here that should be accessible during `perform_async()` must be saved to the database.

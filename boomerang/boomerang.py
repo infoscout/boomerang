@@ -1,6 +1,7 @@
 import importlib
 import itertools
 
+from django.core.handlers.wsgi import WSGIRequest
 from celery import shared_task
 
 from exceptions import BoomerangFailedTask
@@ -12,6 +13,10 @@ from exceptions import BoomerangFailedTask
 class BoomerangTask(object):
 
     perform_sync_with_single = True
+
+    @staticmethod
+    def get_all_arguments(*args, **kwargs):
+        return itertools.chain(args, kwargs.itervalues())
 
     @staticmethod
     def camel_case_to_name(name):
@@ -40,7 +45,8 @@ class BoomerangTask(object):
         else:
             # Otherwise, create a Boomerang Job and run code asynchronously
             name = Job.truncate_name(self.get_name(*args, **kwargs))
-            job = Job.objects.create(name=name, goal=goal)
+            executed_by, args, kwargs = self.get_executed_by(*args, **kwargs)
+            job = Job.objects.create(name=name, goal=goal, executed_by=executed_by)
             async_result = boomerang_task.delay(self.__module__, self.__class__.__name__, job.id, *args, **kwargs)
             if async_result:
                 job.set_celery_task_id(async_result.id)
@@ -48,8 +54,7 @@ class BoomerangTask(object):
     def get_goal_size(self, *args, **kwargs):
         # Estimate the goal size by checking the length of lists and dicts provided as arguments
         goal = 0
-        all_arguments = itertools.chain(args, kwargs.itervalues())
-        for argument in all_arguments:
+        for argument in self.get_all_arguments(*args, **kwargs):
             if isinstance(argument, list) or isinstance(argument, dict):
                 goal += len(argument)
         return goal or 1  # Every goal should have a size of at least 1
@@ -57,6 +62,17 @@ class BoomerangTask(object):
     def get_name(self, *args, **kwargs):
         name_from_class = self.camel_case_to_name(self.__class__.__name__).replace('Boomerang Task', '')
         return getattr(self, 'name', name_from_class)
+
+    def get_executed_by(self, *args, **kwargs):
+        from django.contrib.auth import get_user_model
+
+        user = None
+        if 'request' in kwargs:
+            request = kwargs.pop('request')
+            if isinstance(request, WSGIRequest) and isinstance(getattr(request, 'user', None), get_user_model()):
+                user = request.user
+
+        return user, args, kwargs
 
     def perform_sync(self, *args, **kwargs):
         pass

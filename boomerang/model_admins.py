@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 class JobAdmin(admin.ModelAdmin):
 
     change_list_template = 'admin/boomerang/change_list.html'
-    list_display = ('id', 'name', 'start_time', 'elapsed_time', '_status', 'progress', 'goal',)
+    list_display = ('id', 'name', 'start_time', 'elapsed_time', '_status', 'progress', 'goal', '_executed_by',)
     list_display_links = None
     actions = None
 
@@ -29,3 +29,9 @@ class JobAdmin(admin.ModelAdmin):
             )
         )
     _status.admin_order_field = 'status'
+
+    def _executed_by(self, obj):
+        user = obj.executed_by
+        if user:
+            return user.get_full_name() or user.get_username()
+    _executed_by.admin_order_field = 'executed_by'
