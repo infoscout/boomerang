@@ -13,6 +13,7 @@ from exceptions import BoomerangFailedTask
 class BoomerangTask(object):
 
     perform_sync_with_single = True
+    celery_queue = None
 
     @staticmethod
     def get_all_arguments(*args, **kwargs):
@@ -47,7 +48,13 @@ class BoomerangTask(object):
             name = Job.truncate_name(self.get_name(*args, **kwargs))
             executed_by, args, kwargs = self.get_executed_by(*args, **kwargs)
             job = Job.objects.create(name=name, goal=goal, executed_by=executed_by)
-            async_result = boomerang_task.delay(self.__module__, self.__class__.__name__, job.id, *args, **kwargs)
+
+            async_result = boomerang_task.apply_async(
+                args=(self.__module__, self.__class__.__name__, job.id) + args,
+                kwargs=kwargs,
+                queue=self.celery_queue
+            )
+
             if async_result:
                 job.set_celery_task_id(async_result.id)
 
