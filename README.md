@@ -35,3 +35,5 @@ By default, a Boomerang Task with a goal of 1 will execute the `perform_async()`
 If the request object is provided, Boomerang will record the executor of the job (using the authenticated user in the request). However, the request object will not be included in the `perform_async` method.
 
 Overriding the `perform_sync()` method allows you to run steps synchronously for every job (regardless of the goal size), although variables in the scope of this function are not accessible in the `perform_async()` method, so any work done here that should be accessible during `perform_async()` must be saved to the database.
+
+Setting the `celery_queue` class attribute will cause a Boomerang Task to use that specific queue. By default it is not set and will therefore use the default celery queue.
