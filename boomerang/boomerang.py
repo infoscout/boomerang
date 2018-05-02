@@ -12,6 +12,7 @@ from exceptions import BoomerangFailedTask
 
 class BoomerangTask(object):
 
+    create_boomerang_job = True
     perform_sync_with_single = True
     celery_queue = None
 
@@ -38,24 +39,28 @@ class BoomerangTask(object):
 
         # Run synchronous code
         self.perform_sync(*args, **kwargs)
+        job = job_id = None
         goal = self.get_goal_size(*args, **kwargs)
 
         if self.perform_sync_with_single and goal == 1:
             # Perform asynchronous code synchronously if there is only one item
-            self.perform_async(None, *args, **kwargs)
+            self.perform_async(job, *args, **kwargs)
         else:
-            # Otherwise, create a Boomerang Job and run code asynchronously
-            name = Job.truncate_name(self.get_name(*args, **kwargs))
-            executed_by, args, kwargs = self.get_executed_by(*args, **kwargs)
-            job = Job.objects.create(name=name, goal=goal, executed_by=executed_by)
+            # Create a Boomerang Job
+            if self.create_boomerang_job:
+                name = Job.truncate_name(self.get_name(*args, **kwargs))
+                executed_by, args, kwargs = self.get_executed_by(*args, **kwargs)
+                job = Job.objects.create(name=name, goal=goal, executed_by=executed_by)
+                job_id = job.id
 
+            # Run code asynchronously
             async_result = boomerang_task.apply_async(
-                args=(self.__module__, self.__class__.__name__, job.id,) + args,
+                args=(self.__module__, self.__class__.__name__, job_id,) + args,
                 kwargs=kwargs,
                 queue=self.celery_queue
             )
 
-            if async_result:
+            if job and async_result:
                 job.set_celery_task_id(async_result.id)
 
     def get_goal_size(self, *args, **kwargs):
@@ -94,7 +99,7 @@ def boomerang_task(module, name, job_id, *args, **kwargs):
     """
     @param module: String module path where the Boomerang Task class is
     @param name: String name of the Boomerang Task class
-    @param job_id: Job id
+    @param job_id: Job id (could be None if no Job was created)
     @param args, kwargs: Passed to the function
     """
     from models import Job
@@ -104,16 +109,23 @@ def boomerang_task(module, name, job_id, *args, **kwargs):
     boomerang_task = getattr(module, name)
 
     # Get the Job and mark it as running
-    job = Job.objects.get(id=job_id)
-    job.set_status(Job.RUNNING)
+    job = None
+    if job_id:
+        job = Job.objects.get(id=job_id)
+        job.set_status(Job.RUNNING)
 
     # Perform the asynchronous code for the Boomerang Task
     try:
         boomerang_task.perform_async(job, *args, **kwargs)
     except Exception as e:
-        job.set_status(Job.FAILED)
+        # Mark the Job as failed
+        if job:
+            job.set_status(Job.FAILED)
+        # Raise unexpected exceptions
         if not isinstance(e, BoomerangFailedTask):
             raise
-    else:
+
+    # Mark the Job as completed
+    if job:
         job.progress = job.goal
         job.set_status(Job.DONE)
