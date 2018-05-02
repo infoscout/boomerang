@@ -11,10 +11,10 @@ class Job(models.Model):
     DONE = "DONE"
     FAILED = "FAILED"
     STATUS_CHOICES = (
-        (NOTRUNNING, "Not yet running"),
-        (RUNNING, "Running"),
-        (DONE, "Done"),
-        (FAILED, "Failed"),
+        (NOTRUNNING, "Not yet running",),
+        (RUNNING, "Running",),
+        (DONE, "Done",),
+        (FAILED, "Failed",),
     )
 
     STATUS_COLOR_RED = '#ff5d50'

@@ -50,7 +50,7 @@ class BoomerangTask(object):
             job = Job.objects.create(name=name, goal=goal, executed_by=executed_by)
 
             async_result = boomerang_task.apply_async(
-                args=(self.__module__, self.__class__.__name__, job.id) + args,
+                args=(self.__module__, self.__class__.__name__, job.id,) + args,
                 kwargs=kwargs,
                 queue=self.celery_queue
             )
