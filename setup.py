@@ -53,6 +53,7 @@ class TestCommand(Command):
             ),
             MIDDLEWARE_CLASSES=(
                 'django.contrib.sessions.middleware.SessionMiddleware',
+                'django.contrib.auth.middleware.AuthenticationMiddleware',
                 'django.contrib.messages.middleware.MessageMiddleware',
             ),  # Django < 1.10
             ROOT_URLCONF='boomerang.tests.urls',

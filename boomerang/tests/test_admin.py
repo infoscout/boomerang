@@ -14,12 +14,10 @@ class BoomerangAdminTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = User.objects.create_user(
-            username=cls.USER_USERNAME,
-            password=cls.USER_PASSWORD,
-            is_staff=True,
-            is_superuser=True
-        )
+        cls.user = User.objects.create_user(username=cls.USER_USERNAME, password=cls.USER_PASSWORD)
+        cls.user.is_staff = True
+        cls.user.is_superuser = True
+        cls.user.save()
         dt_1_hour_ago = datetime.datetime.now() - datetime.timedelta(hours=1)
         cls.job = Job.objects.create(
             name='Long-running Job',
