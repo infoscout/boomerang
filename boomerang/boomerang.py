@@ -73,7 +73,7 @@ class BoomerangTask(object):
         return goal or 1  # Every goal should have a size of at least 1
 
     def get_name(self, *args, **kwargs):
-        name_from_class = self.camel_case_to_name(self.__class__.__name__).replace('Boomerang Task', '')
+        name_from_class = self.camel_case_to_name(self.__class__.__name__.replace('BoomerangTask', ''))
         return getattr(self, 'name', name_from_class)
 
     def get_executed_by(self, *args, **kwargs):
