@@ -13,7 +13,7 @@ setup(
     url='http://github.com/infoscout/boomerang',
     version=version,
     install_requires=[
-        'Django>=1.8',
-        'celery>=3.0',
+        'Django >= 1.8, < 2.0a0',
+        'celery >= 3.0',
     ]
 )
