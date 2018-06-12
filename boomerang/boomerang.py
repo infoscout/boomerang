@@ -61,6 +61,7 @@ class BoomerangTask(object):
             )
 
             if job and async_result:
+                job.refresh_from_db()
                 job.set_celery_task_id(async_result.id)
 
     def get_goal_size(self, *args, **kwargs):

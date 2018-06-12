@@ -1,5 +1,8 @@
 # Boomerang
 
+[![CircleCI](https://circleci.com/gh/infoscout/boomerang.svg?style=svg)](https://circleci.com/gh/infoscout/boomerang)
+[![codecov](https://codecov.io/gh/infoscout/boomerang/branch/master/graph/badge.svg)](https://codecov.io/gh/infoscout/boomerang)
+
 Django app to provide visibility into Celery tasks.
 
 ## Usage
