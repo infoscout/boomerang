@@ -7,9 +7,9 @@ from boomerang.tests.tasks import SimpleBoomerangTask
 class BoomerangTaskTestCase(TestCase):
 
     def test_simple_boomerang_task(self):
-        num_iterations = 5
-        SimpleBoomerangTask(num_iterations)
+        num_integers = 5
+        SimpleBoomerangTask(range(num_integers))
         job = Job.objects.get()
-        self.assertEqual(job.goal, num_iterations)
-        self.assertEqual(job.progress, num_iterations)
+        self.assertEqual(job.goal, num_integers)
+        self.assertEqual(job.progress, num_integers)
         self.assertEqual(job.status, Job.DONE)
