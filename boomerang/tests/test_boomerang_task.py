@@ -1,10 +1,14 @@
 from django.test import TestCase
 
+from boomerang.boomerang import BoomerangTask
 from boomerang.models import Job
 from boomerang.tests.tasks import FailingBoomerangTask, SimpleBoomerangTask
 
 
 class BoomerangTaskTestCase(TestCase):
+
+    def test_camel_case_to_name(self):
+        self.assertEqual(BoomerangTask.camel_case_to_name('ImagesAndWords'), 'Images And Words')
 
     def test_simple_boomerang_task(self):
         # Execute a simple Boomerang task
