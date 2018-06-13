@@ -28,10 +28,35 @@ class TestCommand(Command):
                 },
             },
             INSTALLED_APPS=(
+                'django.contrib.admin',
                 'django.contrib.auth',
                 'django.contrib.contenttypes',
+                'django.contrib.sessions',
                 'boomerang',
             ),
+            TEMPLATES=[
+                {
+                    'BACKEND': 'django.template.backends.django.DjangoTemplates',
+                    'APP_DIRS': True,
+                    'OPTIONS': {
+                        'context_processors': [
+                            'django.contrib.auth.context_processors.auth',
+                            'django.contrib.messages.context_processors.messages',
+                        ],
+                    },
+                },
+            ],
+            MIDDLEWARE=(
+                'django.contrib.sessions.middleware.SessionMiddleware',
+                'django.contrib.auth.middleware.AuthenticationMiddleware',
+                'django.contrib.messages.middleware.MessageMiddleware',
+            ),
+            MIDDLEWARE_CLASSES=(
+                'django.contrib.sessions.middleware.SessionMiddleware',
+                'django.contrib.auth.middleware.AuthenticationMiddleware',
+                'django.contrib.messages.middleware.MessageMiddleware',
+            ),  # Django < 1.10
+            ROOT_URLCONF='boomerang.tests.urls',
             CELERY_ALWAYS_EAGER=True,
             CELERY_TASK_ALWAYS_EAGER=True
         )
