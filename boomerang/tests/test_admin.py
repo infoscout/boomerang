@@ -43,7 +43,7 @@ class BoomerangAdminTestCase(TestCase):
         # Kick off a Boomerang job within the scope of a request initated by an admin user
         request = RequestFactory().post('/execute')
         request.user = self.user
-        SimpleBoomerangTask(range(5), request=request)
+        SimpleBoomerangTask(list(range(5)), request=request)
 
         # Verify that the job was marked as being executed by the user that made the request
         job = Job.objects.get(name='Simple')

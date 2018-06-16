@@ -7,7 +7,7 @@ import itertools
 from django.core.handlers.wsgi import WSGIRequest
 from celery import shared_task
 
-from exceptions import BoomerangFailedTask
+from .exceptions import BoomerangFailedTask
 
 
 # See README.md
@@ -21,7 +21,7 @@ class BoomerangTask(object):
 
     @staticmethod
     def get_all_arguments(*args, **kwargs):
-        return itertools.chain(args, kwargs.itervalues())
+        return itertools.chain(args, kwargs.values())
 
     @staticmethod
     def camel_case_to_name(name):
@@ -38,7 +38,7 @@ class BoomerangTask(object):
         return ' '.join(words).title()
 
     def __init__(self, *args, **kwargs):
-        from models import Job
+        from .models import Job
 
         # Run synchronous code
         self.perform_sync(*args, **kwargs)
@@ -106,7 +106,7 @@ def boomerang_task(module, name, job_id, *args, **kwargs):
     @param job_id: Job id (could be None if no Job was created)
     @param args, kwargs: Passed to the function
     """
-    from models import Job
+    from .models import Job
 
     # Reimport the Boomerang Task
     module = importlib.import_module(module)
