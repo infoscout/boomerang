@@ -98,7 +98,7 @@ class BoomerangTask(object):
         pass
 
 
-@shared_task
+@shared_task(acks_late=True, reject_on_worker_lost=True)
 def boomerang_task(module, name, job_id, *args, **kwargs):
     """
     @param module: String module path where the Boomerang Task class is
