@@ -37,7 +37,7 @@ class BoomerangTask(object):
 
         return ' '.join(words).title()
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, resumeable=False, *args, **kwargs):
         from .models import Job
 
         # Run synchronous code
@@ -57,11 +57,18 @@ class BoomerangTask(object):
                 job_id = job.id
 
             # Run code asynchronously
-            async_result = boomerang_task.apply_async(
-                args=(self.__module__, self.__class__.__name__, job_id,) + args,
-                kwargs=kwargs,
-                queue=self.celery_queue
-            )
+            if resumeable:
+                async_result = resumeable_boomerang_task.apply_async(
+                    args=(self.__module__, self.__class__.__name__, job_id,) + args,
+                    kwargs=kwargs,
+                    queue=self.celery_queue
+                )
+            else:
+                async_result = boomerang_task.apply_async(
+                    args=(self.__module__, self.__class__.__name__, job_id,) + args,
+                    kwargs=kwargs,
+                    queue=self.celery_queue
+                )
 
             if job and async_result:
                 job.refresh_from_db()
@@ -98,7 +105,7 @@ class BoomerangTask(object):
         pass
 
 
-@shared_task(acks_late=True, reject_on_worker_lost=True)
+@shared_task
 def boomerang_task(module, name, job_id, *args, **kwargs):
     """
     @param module: String module path where the Boomerang Task class is
@@ -121,6 +128,59 @@ def boomerang_task(module, name, job_id, *args, **kwargs):
     # Perform the asynchronous code for the Boomerang Task
     try:
         boomerang_task.perform_async(job, *args, **kwargs)
+    except Exception as e:
+        # Mark the Job as failed
+        if job:
+            job.set_status(Job.FAILED)
+        # Raise unexpected exceptions
+        if not isinstance(e, BoomerangFailedTask):
+            raise
+
+    # Mark the Job as completed
+    if job:
+        job.progress = job.goal
+        job.set_status(Job.DONE)
+
+
+@shared_task(acks_late=True, reject_on_worker_lost=True)
+def resumeable_boomerang_task(module, name, job_id, *args, **kwargs):
+    """
+    Resumable Boomerang tasks allow us to continue where we left off.
+
+    By default, Celery jobs are acknowledged when they are started. This
+    results in tasks that do not run to completion as execution is interrupted.
+
+    We can configure tasks to be acknowledged when they are completed. This
+    enables tasks to be resumeable if we keep track of current progress.
+    Boomerang has this functionality: we are able to infer the task's goal_size
+    as well as keep a count of our incremental progress.
+
+    Note: we'll have to inject a progress variable, `_current_progress`,  into
+    each resumeable task defintion's `perform_async()` function. Our function
+    should use the `_curent_progress` to continue where it was stopped.
+
+    Would recommend using this for idemopotent tasks.
+
+    @param module: String module path where the Boomerang Task class is
+    @param name: String name of the Boomerang Task class
+    @param job_id: Job id (could be None if no Job was created)
+    @param args, kwargs: Passed to the function
+    """
+    from .models import Job
+
+    # Reimport the Boomerang Task
+    module = importlib.import_module(module)
+    boomerang_task = getattr(module, name)
+
+    # Get the Job and mark it as running
+    job = None
+    if job_id:
+        job = Job.objects.get(id=job_id)
+        job.set_status(Job.RUNNING)
+
+    # Perform the asynchronous code for the Boomerang Task
+    try:
+        boomerang_task.perform_async(job, _current_progress=job.progress, *args, **kwargs)
     except Exception as e:
         # Mark the Job as failed
         if job:
