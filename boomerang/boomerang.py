@@ -37,8 +37,10 @@ class BoomerangTask(object):
 
         return ' '.join(words).title()
 
-    def __init__(self, resumeable=False, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         from .models import Job
+
+        resumeable = kwargs.pop("_resumeable", None)
 
         # Run synchronous code
         self.perform_sync(*args, **kwargs)
@@ -47,7 +49,10 @@ class BoomerangTask(object):
 
         if self.perform_sync_with_single and goal == 1:
             # Perform asynchronous code synchronously if there is only one item
-            self.perform_async(job, *args, **kwargs)
+            if resumeable:
+                self.perform_async(job, _current_progress=0, *args, **kwargs)
+            else:
+                self.perform_async(job, *args, **kwargs)
         else:
             # Create a Boomerang Job
             if self.create_boomerang_job:
