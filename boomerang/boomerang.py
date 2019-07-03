@@ -149,22 +149,7 @@ def boomerang_task(module, name, job_id, *args, **kwargs):
 
 @shared_task(acks_late=True, reject_on_worker_lost=True)
 def resumeable_boomerang_task(module, name, job_id, *args, **kwargs):
-    """
-    Resumable Boomerang tasks allow us to continue where we left off.
-
-    By default, Celery jobs are acknowledged when they are started. This
-    results in tasks that do not run to completion as execution is interrupted.
-
-    We can configure tasks to be acknowledged when they are completed. This
-    enables tasks to be resumeable if we keep track of current progress.
-    Boomerang has this functionality: we are able to infer the task's goal_size
-    as well as keep a count of our incremental progress.
-
-    Note: we'll have to inject a progress variable, `_current_progress`,  into
-    each resumeable task defintion's `perform_async()` function. Our function
-    should use the `_curent_progress` to continue where it was stopped.
-
-    Would recommend using this for idemopotent tasks.
+    """Resumable Boomerang tasks that track current progress
 
     @param module: String module path where the Boomerang Task class is
     @param name: String name of the Boomerang Task class
