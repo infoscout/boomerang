@@ -66,7 +66,7 @@ class SendPushNotificationsBoomerangTask(BoomerangTask):
 
     @staticmethod
     def perform_async(job, user_ids, _current_progress, _*args, **kwargs):
-        user_ids = user_ids[:_current_progress]
+        user_ids = user_ids[_current_progress:]
 
         for user_id in user_ids:
             # ...push notification logic...

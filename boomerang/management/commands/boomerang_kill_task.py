@@ -24,4 +24,4 @@ class Command(BaseCommand):
         job.set_status(Job.FAILED)
         job.save()
 
-        self.stdout.write("Killed task -- Boomerang ID %s Celery ID %s" % (job_id, celery_task_id))
+        self.stdout.write("Killed task -- Boomerang ID %s Celery ID %s" % (job_id, job.celery_task_id))
