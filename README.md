@@ -77,3 +77,10 @@ class SendPushNotificationsBoomerangTask(BoomerangTask):
 # this can be called as follows:
 SendPushNotificationsBoomerangTask(all_users_ids, _resumeable=True)
 ```
+
+#### Kill Resumeable Boomerang Tasks
+
+You will need to stop the task via celery.
+
+1. Find the `Job ID` using the Boomerang admin
+1. Run the following management command: `manage.py boomerang_kill_task --id #`

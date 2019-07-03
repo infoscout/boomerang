@@ -6,9 +6,7 @@ from django.test import TestCase
 from boomerang.boomerang import BoomerangTask
 from boomerang.models import Job
 from boomerang.tests.tasks import (
-    FailingBoomerangTask,
-    ResumeableBoomerangTask,
-    ResumableFailingBoomerangTask,
+    FailingBoomerangTask, ResumeableBoomerangTask, ResumableFailingBoomerangTask,
     SimpleBoomerangTask,
 )
 

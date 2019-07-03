@@ -19,4 +19,9 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         job_id = kwargs["job_id"]
         job = Job.objects.get(pk=job_id)
+
         revoke(job.celery_task_id, terminate=True)
+        job.set_status(Job.FAILED)
+        job.save()
+
+        self.stdout.write("Killed task -- Boomerang ID %s Celery ID %s" % (job_id, celery_task_id))
