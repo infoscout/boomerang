@@ -55,7 +55,7 @@ By default, Celery jobs are acknowledged when they are started. This results in 
 
 We can configure tasks to be [acknowledged after they are completed](http://docs.celeryproject.org/en/latest/faq.html#faq-acks-late-vs-retry). This enables tasks to be resumeable if we keep track of current progress. If we leverage Boomerang has this functionality: we are able to infer the task's goal_size and keep track of our incremental progress.
 
-Would recommend using this for idemopotent tasks as a task might be run and stopped before the database is udpated.
+Would recommend using this for **idemopotent tasks** as a task might be run and stopped before the database records the updated progress.
 
 We have to inject a progress variable, `_current_progress`, into each resumeable task defintion's `perform_async()` function. Our task definition should use the `_curent_progress` to continue where it was stopped.
 
@@ -65,7 +65,7 @@ from boomerang import BoomerangTask, BoomerangFailedTask
 class SendPushNotificationsBoomerangTask(BoomerangTask):
 
     @staticmethod
-    def perform_async(job, user_ids, _current_progress, _*args, **kwargs):
+    def perform_async(job, user_ids, _current_progress, *args, **kwargs):
         user_ids = user_ids[_current_progress:]
 
         for user_id in user_ids:
@@ -74,13 +74,11 @@ class SendPushNotificationsBoomerangTask(BoomerangTask):
                 raise BoomerangFailedTask
             job.increment_progress()
 
-# this can be called as follows:
+# this can be queued as follows:
 SendPushNotificationsBoomerangTask(all_users_ids, _resumeable=True)
 ```
 
 #### Kill Resumeable Boomerang Tasks
 
-You will need to stop the task via celery.
-
-1. Find the `Job ID` using the Boomerang admin
+1. Find the `Job ID` using the Boomerang admin (`/admin/boomerang/job`)
 1. Run the following management command: `manage.py boomerang_kill_task --id #`

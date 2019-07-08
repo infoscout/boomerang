@@ -14,6 +14,12 @@ from .exceptions import BoomerangFailedTask
 
 
 class BoomerangTask(object):
+    """Boomerang tasks provide introspection into Celery jobs.
+
+    Boomerang jobs can be resumed by passing `_resumeable=True`. Parameters are
+    prefixed with underscore to avoid a namespace clash with parameters
+    passed into Boomerang tasks.
+    """
 
     create_boomerang_job = True
     perform_sync_with_single = True
@@ -167,10 +173,13 @@ def resumeable_boomerang_task(module, name, job_id, *args, **kwargs):
     if job_id:
         job = Job.objects.get(id=job_id)
         job.set_status(Job.RUNNING)
+        current_progress = job.progress
+    else:
+        current_progress = 0
 
     # Perform the asynchronous code for the Boomerang Task
     try:
-        boomerang_task.perform_async(job, _current_progress=job.progress, *args, **kwargs)
+        boomerang_task.perform_async(job, _current_progress=current_progress, *args, **kwargs)
     except Exception as e:
         # Mark the Job as failed
         if job:
