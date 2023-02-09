@@ -23,6 +23,7 @@ class TestCommand(Command):
         from django.core.management import call_command
 
         settings.configure(
+            SECRET_KEY="not a real secret",
             DATABASES={
                 'default': {
                     'NAME': ':memory:',
