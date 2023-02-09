@@ -86,15 +86,17 @@ setup(
         'Framework :: Django :: 3.0',
         'Framework :: Django :: 3.1',
         'Framework :: Django :: 3.2',
+        'Framework :: Django :: 4.0',
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.9',
         'Topic :: Utilities',
     ],
     install_requires=[
-        'Django >= 1.8, < 4.0a0',
+        'Django >= 1.8, < 4.1a0',
         'celery >= 3.0',
     ],
     cmdclass={'test': TestCommand}

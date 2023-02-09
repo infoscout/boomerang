@@ -5,7 +5,7 @@ jobs:
       - image: circleci/python:2.7
     resource_class: small
     environment:
-      - DJANGO_VERSIONS: "18;19;110"
+      - DJANGO_VERSIONS: "18;19;110;111"
     steps:
       - checkout
       - run:
