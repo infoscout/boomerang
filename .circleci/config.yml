@@ -5,7 +5,7 @@ jobs:
       - image: circleci/python:2.7
     resource_class: small
     environment:
-      - DJANGO_VERSIONS: "18;19;110;111"
+      - DJANGO_VERSIONS: "18;19;110"
     steps:
       - checkout
       - run:
@@ -21,12 +21,12 @@ jobs:
           command: |
             source venv/bin/activate
             echo $DJANGO_VERSIONS | tr ";" "\n" | xargs -L 1 -I % tox -e dj%
-  test-py36:
+  test-py39:
     <<: *test-template
     docker:
-      - image: circleci/python:3.6
+      - image: circleci/python:3.9
     environment:
-      - DJANGO_VERSIONS: "111;20"
+      - DJANGO_VERSIONS: "20;22;30;31;32;40"
 
 workflows:
   version: 2
