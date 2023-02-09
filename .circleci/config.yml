@@ -33,6 +33,6 @@ workflows:
   test:
     jobs:
       - test-py27
-      - test-py36:
+      - test-py39:
           requires:
             - test-py27
