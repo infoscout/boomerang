@@ -23,6 +23,7 @@ class TestCommand(Command):
         from django.core.management import call_command
 
         settings.configure(
+            SECRET_KEY="not a real secret",
             DATABASES={
                 'default': {
                     'NAME': ':memory:',
@@ -34,6 +35,7 @@ class TestCommand(Command):
                 'django.contrib.auth',
                 'django.contrib.contenttypes',
                 'django.contrib.sessions',
+                'django.contrib.messages',
                 'boomerang',
             ),
             TEMPLATES=[
@@ -81,15 +83,19 @@ setup(
         'Framework :: Django :: 1.10',
         'Framework :: Django :: 1.11',
         'Framework :: Django :: 2.0',
+        'Framework :: Django :: 3.0',
+        'Framework :: Django :: 3.1',
+        'Framework :: Django :: 3.2',
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.9',
         'Topic :: Utilities',
     ],
     install_requires=[
-        'Django >= 1.8, < 3.1a0',
+        'Django >= 1.8, < 4.0a0',
         'celery >= 3.0',
     ],
     cmdclass={'test': TestCommand}
